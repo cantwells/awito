@@ -43,6 +43,7 @@ p {
 
 button {
     cursor: pointer;
+    outline: none;
 }
 
 .visually-hidden {
