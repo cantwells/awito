@@ -12,22 +12,18 @@ const btnAddAd = document.querySelector('.add__ad'), //Кнопка Подать
 //Функция закрытия модального окна
 const closeModal = event => {
     const target = event.target;
-
-    if (target.classList.contains('modal__close')) {
-        if (target.closest('.modal__add')) {
-            modalAdd.classList.add('hide');
-            modalSubmit.reset();
-        } else if (target.closest('.modal__item')) {
-            modalItem.classList.add('hide');
-        }
-    } else {
-        if (target.classList.contains('modal') || event.keyCode == 27) {
-            modalAdd.classList.add('hide');
-            modalSubmit.reset();
-            modalItem.classList.add('hide');
-        }
+    //Закрываем все модальные окна при нажатии на диве
+    if (target.classList.contains('modal__close') ||
+        target.classList.contains('modal') || event.key == "Escape") {
+        modalAdd.classList.add('hide');
+        modalSubmit.reset();
+        modalItem.classList.add('hide');
+        //Удаление обработчика событий
+        modalItem.removeEventListener('click', closeModal);
+        document.removeEventListener('keydown', closeModal);
     }
 }
+
 
 /*=========================Обработчики событий======================================*/
 
@@ -35,6 +31,10 @@ const closeModal = event => {
 btnAddAd.addEventListener('click', event => {
     modalAdd.classList.remove('hide');
     modalBtnSubmit.disabled = true;
+    //Закрываем модальное окно с товаром
+    modalItem.addEventListener('click', closeModal);
+    //Закрываем модальные окна по нажатию Esc
+    document.addEventListener('keydown', closeModal);
 });
 
 //Зыкрываем модальное окно с добавлением товара
@@ -43,13 +43,12 @@ modalAdd.addEventListener('click', closeModal);
 //Открываем модальное окно с товаром
 catalog.addEventListener('click', event => {
     const target = event.target;
-
-    if (target.closest('.card'))
+    if (target.closest('.card')) {
+        console.log('opent window item');
         modalItem.classList.remove('hide');
+        //Закрываем модальное окно с товаром
+        modalItem.addEventListener('click', closeModal);
+        //Закрываем модальные окна по нажатию Esc
+        document.addEventListener('keydown', closeModal);
+    }
 })
-
-//Закрываем модальное окно с товаром
-modalItem.addEventListener('click', closeModal);
-
-//Закрываем модальные окна по нажатию Esc
-document.addEventListener('keydown', closeModal);
