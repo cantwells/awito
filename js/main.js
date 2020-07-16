@@ -10,11 +10,11 @@ const btnAddAd = document.querySelector('.add__ad'), //Кнопка Подать
 
 //Получаем все элементы формы для добавления товара, кроме кнопки
 const formElements = [...modalSubmit.elements].filter(item => item.tagName !== 'BUTTON');
-const DataBase = [];
+const dataBase = [];
 /*========================Функции ==================================================*/
 
 //Функция закрытия модального окна
-const closeModal = event => {
+const closeModal = (event) => {
     const target = event.target;
     //Закрываем все модальные окна при нажатии на диве
     if (target.classList.contains('modal__close') ||
@@ -23,15 +23,35 @@ const closeModal = event => {
         modalSubmit.reset();
         modalItem.classList.add('hide');
         //Удаление обработчика событий
+        modalAdd.removeEventListener('click', closeModal);
         modalItem.removeEventListener('click', closeModal);
         document.removeEventListener('keydown', closeModal);
+        modalSubmit.removeEventListener('input', sendAbility);
+        modalSubmit.removeEventListener('submit', sendForm);
     }
 }
 
 //Проверка заполнения полей формы
 const checkForm = () => formElements.every(item => item.value);
 
-/*=========================Обработчики событий======================================*/
+//Функция для события отображения скрытия текста и аткивации кнопки
+const sendAbility = event => {
+    modalBtnSubmit.disabled = !checkForm();
+    modalMsgWarning.style.display = checkForm() ? 'none' : '';
+}
+
+//Отправка формы
+const sendForm = event => {
+        event.preventDefault();
+        const objElem = {};
+        formElements.forEach(item => {
+            objElem[item.name] = item.value;
+        })
+        dataBase.push(objElem);
+        closeModal({ target: modalAdd });
+        console.log(dataBase);
+    }
+    /*=========================Обработчики событий======================================*/
 
 //По кнопке открываем модальное окно с добавление товара
 btnAddAd.addEventListener('click', event => {
@@ -42,6 +62,12 @@ btnAddAd.addEventListener('click', event => {
     modalAdd.addEventListener('click', closeModal);
     //Закрываем модальные окна по нажатию Esc
     document.addEventListener('keydown', closeModal);
+
+    //Отображаем/скрываем предупреждающее сообщение, и делаем кнопку активной или нет
+    modalSubmit.addEventListener('input', sendAbility);
+
+    //Обрабатываем форму добавления товара
+    modalSubmit.addEventListener('submit', sendForm);
 });
 
 //Зыкрываем модальное окно с добавлением товара
@@ -57,10 +83,4 @@ catalog.addEventListener('click', event => {
         //Закрываем модальные окна по нажатию Esc
         document.addEventListener('keydown', closeModal);
     }
-})
-
-//Отображаем/скрываем предупреждающее сообщение, и делаем кнопку активной или нет
-modalSubmit.addEventListener('input', event => {
-    modalBtnSubmit.disabled = !checkForm();
-    modalMsgWarning.style.display = checkForm() ? 'none' : '';
 })
