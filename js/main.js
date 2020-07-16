@@ -10,7 +10,7 @@ const btnAddAd = document.querySelector('.add__ad'), //Кнопка Подать
 
 //Получаем все элементы формы для добавления товара, кроме кнопки
 const formElements = [...modalSubmit.elements].filter(item => item.tagName !== 'BUTTON');
-const dataBase = [];
+const dataBase = JSON.parse(localStorage.getItem('Awito')) || [];
 /*========================Функции ==================================================*/
 
 //Функция закрытия модального окна
@@ -49,6 +49,7 @@ const sendForm = event => {
         })
         dataBase.push(objElem);
         closeModal({ target: modalAdd });
+        localStorage.setItem('Awito', JSON.stringify(dataBase));
         console.log(dataBase);
     }
     /*=========================Обработчики событий======================================*/
@@ -84,3 +85,5 @@ catalog.addEventListener('click', event => {
         document.addEventListener('keydown', closeModal);
     }
 })
+
+console.log(dataBase);
