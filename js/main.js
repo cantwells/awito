@@ -6,12 +6,28 @@ const btnAddAd = document.querySelector('.add__ad'), //Кнопка Подать
     modalMsgWarning = document.querySelector('.modal__msg-warning'), //Сообщение о не заполненатости всех полей формы
     catalog = document.querySelector('.catalog'), // ul с картачками
     modalItem = document.querySelector('.modal__item'), //Модалка с инфой о товаре
+    // modalFileLabel = document.querySelector('.btn.modal__file-label'), //Обертка для кнопки Добавить фото
+    modalFileBtn = document.querySelector('.modal__file-btn'), //псевдо кнопка Добавить фото
+    modalFileInput = document.querySelector('.modal__file-input'), //инпут получения файла
+    modalImageAdd = document.querySelector('.modal__image-add'), //Изображение внутри модального окна
     modal = document.querySelector('.modal'); //Общий класс для модалок
+
+//Константы для возможности восстанавливать значения при закрытие модального окна
+const TEMP_IMG = 'img/temp.jpg';
+const DEFAULT_TXT = 'Добавить фото';
+
+//Объекст с данными фотографии
+const infoPhoto = {};
 
 //Получаем все элементы формы для добавления товара, кроме кнопки
 const formElements = [...modalSubmit.elements].filter(item => item.tagName !== 'BUTTON');
-const dataBase = JSON.parse(localStorage.getItem('Awito')) || [];
+
+//Добавляем данные из LocalStorage или устанавливают пустую
+const dataBase = JSON.parse(localStorage.getItem('awito')) || [];
 /*========================Функции ==================================================*/
+
+//Сохраняем данные в локал сторадж
+const saveDB = db => localStorage.setItem('awito', JSON.stringify(db));
 
 //Функция закрытия модального окна
 const closeModal = (event) => {
@@ -28,6 +44,12 @@ const closeModal = (event) => {
         document.removeEventListener('keydown', closeModal);
         modalSubmit.removeEventListener('input', sendAbility);
         modalSubmit.removeEventListener('submit', sendForm);
+        modalFileInput.removeEventListener('change', loadImage);
+        //После небольшой паузы возвращаем картинку и текст в кнопке по умолчанию
+        setTimeout(() => {
+            modalImageAdd.src = TEMP_IMG;
+            modalFileBtn.textContent = DEFAULT_TXT;
+        }, 300);
     }
 }
 
@@ -40,6 +62,45 @@ const sendAbility = event => {
     modalMsgWarning.style.display = checkForm() ? 'none' : '';
 }
 
+const loadImage = event => {
+    //Получаем специальный объект File в котором храняться данные по файлу
+    const file = modalFileInput.files[0];
+    //Сохраняем имя файла (нужно для отображение при выбере)
+    infoPhoto.filename = file.name;
+    //Сохраняем размер изображения (нужно для проверки файла на размер)
+    infoPhoto.size = file.size;
+
+    if (file.size < 40000) {
+        //Получаем экземпляр класса для асихроной загрузки файла
+        const reader = new FileReader();
+        //задаём что хотим получить спец тип base64 в виде data url
+        reader.readAsDataURL(file);
+        //вешаем событие, после загрузки изображения получить data url 
+        reader.addEventListener('load', event => {
+                //добавляем в объект
+                infoPhoto.url = event.target.result;
+                //устанавливаем картинку в модальное окно
+                modalImageAdd.src = infoPhoto.url;
+            })
+            //сбрасыаем фон по умолчанию
+        modalFileBtn.style.background = '';
+        //Указываем имя файла
+        modalFileBtn.textContent = file.name;
+        //Обрабатываем форму добавления товара
+        modalSubmit.addEventListener('submit', sendForm);
+    } else {
+        //Если файл больше нужного размера
+        //Задаем нужный фон
+        modalFileBtn.style.background = '#BF3F4A';
+        //Выводит предупреждающее сообщение
+        modalFileBtn.textContent = 'Превышен размер 40Мб';
+        //Сбрасываем поле Input
+        modalFileInput.value = '';
+        //Проверяем можно ли отображать кнопку и сообщение
+        checkForm();
+    }
+}
+
 //Отправка формы
 const sendForm = event => {
         event.preventDefault();
@@ -47,10 +108,10 @@ const sendForm = event => {
         formElements.forEach(item => {
             objElem[item.name] = item.value;
         })
+        objElem.url = infoPhoto.url;
         dataBase.push(objElem);
+        saveDB(dataBase);
         closeModal({ target: modalAdd });
-        localStorage.setItem('Awito', JSON.stringify(dataBase));
-        console.log(dataBase);
     }
     /*=========================Обработчики событий======================================*/
 
@@ -67,12 +128,9 @@ btnAddAd.addEventListener('click', event => {
     //Отображаем/скрываем предупреждающее сообщение, и делаем кнопку активной или нет
     modalSubmit.addEventListener('input', sendAbility);
 
-    //Обрабатываем форму добавления товара
-    modalSubmit.addEventListener('submit', sendForm);
+    //Получение фото товара
+    modalFileInput.addEventListener('change', loadImage);
 });
-
-//Зыкрываем модальное окно с добавлением товара
-// modalAdd.addEventListener('click', closeModal);
 
 //Открываем модальное окно с товаром
 catalog.addEventListener('click', event => {
@@ -85,5 +143,3 @@ catalog.addEventListener('click', event => {
         document.addEventListener('keydown', closeModal);
     }
 })
-
-console.log(dataBase);
