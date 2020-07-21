@@ -101,6 +101,23 @@ const loadImage = event => {
     }
 }
 
+//Отрисовка карточек товаров
+const renderCards = () => {
+    catalog.textContent = '';
+    dataBase.forEach((item, i) => {
+        const card = `
+            <li class="card" data-id="${i}">
+                <img class="card__image" src=${item.url} alt="test">
+                <div class="card__description">
+                <h3 class="card__header">${item.nameItem}</h3>
+                <div class="card__price">${item.costItem} ₽</div>
+                </div>
+            </li>
+            `;
+        catalog.insertAdjacentHTML('beforeEnd', card);
+    });
+}
+
 //Отправка формы
 const sendForm = event => {
         event.preventDefault();
@@ -112,6 +129,7 @@ const sendForm = event => {
         dataBase.push(objElem);
         saveDB(dataBase);
         closeModal({ target: modalAdd });
+        renderCards();
     }
     /*=========================Обработчики событий======================================*/
 
@@ -143,3 +161,5 @@ catalog.addEventListener('click', event => {
         document.addEventListener('keydown', closeModal);
     }
 })
+
+if (dataBase) renderCards();
