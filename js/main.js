@@ -12,6 +12,13 @@ const btnAddAd = document.querySelector('.add__ad'), //Кнопка Подать
     modalImageAdd = document.querySelector('.modal__image-add'), //Изображение внутри модального окна
     modal = document.querySelector('.modal'); //Общий класс для модалок
 
+//Части от модалки с товаром
+const modalHeaderItem = document.querySelector('.modal__header-item'), //Заголовок
+    modalStatusItem = document.querySelector('.modal__status-item'), //Состояние
+    modalDescriptionItem = document.querySelector('.modal__description-item'), //Описание
+    modalCostItem = document.querySelector('.modal__cost-item'), //цена
+    modalImageItem = document.querySelector('.modal__image-item'); //изображение
+
 //Константы для возможности восстанавливать значения при закрытие модального окна
 const TEMP_IMG = 'img/temp.jpg';
 const DEFAULT_TXT = 'Добавить фото';
@@ -21,6 +28,8 @@ const infoPhoto = {};
 
 //Получаем все элементы формы для добавления товара, кроме кнопки
 const formElements = [...modalSubmit.elements].filter(item => item.tagName !== 'BUTTON');
+
+
 
 //Добавляем данные из LocalStorage или устанавливают пустую
 const dataBase = JSON.parse(localStorage.getItem('awito')) || [];
@@ -129,6 +138,7 @@ const sendForm = event => {
         dataBase.push(objElem);
         saveDB(dataBase);
         closeModal({ target: modalAdd });
+        console.log(formElements);
         renderCards();
     }
     /*=========================Обработчики событий======================================*/
@@ -154,6 +164,16 @@ btnAddAd.addEventListener('click', event => {
 catalog.addEventListener('click', event => {
     const target = event.target;
     if (target.closest('.card')) {
+
+        const card = target.closest('.card');
+        const id = card.dataset.id;
+
+        modalImageItem.src = dataBase[id].url;
+        modalHeaderItem.textContent = dataBase[id].nameItem;
+        modalStatusItem.textContent = dataBase[id].status === 'new' ? 'Новое' : 'Б/У';
+        modalDescriptionItem.textContent = dataBase[id].descriptionItem;
+        modalCostItem.textContent = `${dataBase[id].costItem} ₽`;
+
         modalItem.classList.remove('hide');
         //Закрываем модальное окно с товаром
         modalItem.addEventListener('click', closeModal);
