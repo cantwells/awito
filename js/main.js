@@ -163,9 +163,9 @@ btnAddAd.addEventListener('click', event => {
 //Открываем модальное окно с товаром
 catalog.addEventListener('click', event => {
     const target = event.target;
-    if (target.closest('.card')) {
+    const card = target.closest('.card');
 
-        const card = target.closest('.card');
+    if (card) {
         const id = card.dataset.id;
 
         modalImageItem.src = dataBase[id].url;
