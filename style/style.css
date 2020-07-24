@@ -296,6 +296,12 @@ button {
     visibility: hidden;
 }
 
+.error {
+    color: red;
+    font-size: 2rem;
+    padding: 5px 10px 0;
+}
+
 @media (max-width: 515px) {
     .catalog {
         justify-content: center;
