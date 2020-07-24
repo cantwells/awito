@@ -19,6 +19,12 @@ const modalHeaderItem = document.querySelector('.modal__header-item'), //Заг�
     modalCostItem = document.querySelector('.modal__cost-item'), //цена
     modalImageItem = document.querySelector('.modal__image-item'); //изображение
 
+//Поиск
+const searchInput = document.querySelector('.search__input'), //Поле поиска
+    menuСontainer = document.querySelector('.menu__container'), //Вывод котегорий
+    error = document.querySelector('.error'), //вывод ошибок
+    logo = document.querySelector('.logo');
+
 //Константы для возможности восстанавливать значения при закрытие модального окна
 const TEMP_IMG = 'img/temp.jpg';
 const DEFAULT_TXT = 'Добавить фото';
@@ -29,10 +35,10 @@ const infoPhoto = {};
 //Получаем все элементы формы для добавления товара, кроме кнопки
 const formElements = [...modalSubmit.elements].filter(item => item.tagName !== 'BUTTON');
 
-
-
 //Добавляем данные из LocalStorage или устанавливают пустую
 const dataBase = JSON.parse(localStorage.getItem('awito')) || [];
+//счётчик для id
+let counter = dataBase.length;
 /*========================Функции ==================================================*/
 
 //Сохраняем данные в локал сторадж
@@ -111,11 +117,11 @@ const loadImage = event => {
 }
 
 //Отрисовка карточек товаров
-const renderCards = () => {
+const renderCards = (db = dataBase) => {
     catalog.textContent = '';
-    dataBase.forEach((item, i) => {
+    db.forEach((item) => {
         const card = `
-            <li class="card" data-id="${i}">
+            <li class="card" data-id="${item.id}">
                 <img class="card__image" src=${item.url} alt="test">
                 <div class="card__description">
                 <h3 class="card__header">${item.nameItem}</h3>
@@ -135,10 +141,10 @@ const sendForm = event => {
             objElem[item.name] = item.value;
         })
         objElem.url = infoPhoto.url;
+        objElem.id = counter++;
         dataBase.push(objElem);
         saveDB(dataBase);
         closeModal({ target: modalAdd });
-        console.log(formElements);
         renderCards();
     }
     /*=========================Обработчики событий======================================*/
@@ -165,21 +171,55 @@ catalog.addEventListener('click', event => {
     const target = event.target;
     const card = target.closest('.card');
 
-    if (card) {
-        const id = card.dataset.id;
+    //Получаем подходящий объект
+    const obj = dataBase.find(item => item.id === +card.dataset.id);
+    modalImageItem.src = obj.url;
+    modalHeaderItem.textContent = obj.nameItem;
+    modalStatusItem.textContent = obj.status === 'new' ? 'Новое' : 'Б/У';
+    modalDescriptionItem.textContent = obj.descriptionItem;
+    modalCostItem.textContent = `${obj.costItem} ₽`;
 
-        modalImageItem.src = dataBase[id].url;
-        modalHeaderItem.textContent = dataBase[id].nameItem;
-        modalStatusItem.textContent = dataBase[id].status === 'new' ? 'Новое' : 'Б/У';
-        modalDescriptionItem.textContent = dataBase[id].descriptionItem;
-        modalCostItem.textContent = `${dataBase[id].costItem} ₽`;
+    modalItem.classList.remove('hide');
+    //Закрываем модальное окно с товаром
+    modalItem.addEventListener('click', closeModal);
+    //Закрываем модальные окна по нажатию Esc
+    document.addEventListener('keydown', closeModal);
+    // }
+});
 
-        modalItem.classList.remove('hide');
-        //Закрываем модальное окно с товаром
-        modalItem.addEventListener('click', closeModal);
-        //Закрываем модальные окна по нажатию Esc
-        document.addEventListener('keydown', closeModal);
+//Поиск элементов
+searchInput.addEventListener('input', event => {
+    const target = event.target;
+
+    const text = target.value.trim().toLowerCase();
+    if (text.length > 2) {
+        const result = dataBase.filter(item => item.nameItem.toLowerCase().includes(text) ||
+            item.descriptionItem.toLowerCase().includes(text));
+        if (result.length) {
+            error.textContent = '';
+            renderCards(result);
+        } else {
+            catalog.textContent = '';
+            error.textContent = 'Ничего не найдено!';
+        }
+    } else {
+        renderCards();
     }
+
+})
+
+//Вывод по категориям
+menuСontainer.addEventListener('click', event => {
+    const target = event.target;
+    if (target.tagName === 'A') {
+        const result = dataBase.filter(item => item.category === target.dataset.category);
+        renderCards(result);
+    }
+})
+
+logo.addEventListener('click', event => {
+    event.preventDefault();
+    renderCards();
 })
 
 if (dataBase) renderCards();
