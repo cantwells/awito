@@ -85,7 +85,7 @@ const loadImage = event => {
     //Сохраняем размер изображения (нужно для проверки файла на размер)
     infoPhoto.size = file.size;
 
-    if (file.size < 40000) {
+    if (file.size < 50000) {
         //Получаем экземпляр класса для асихроной загрузки файла
         const reader = new FileReader();
         //задаём что хотим получить спец тип base64 в виде data url
@@ -129,7 +129,7 @@ const renderCards = (db = dataBase) => {
                 </div>
             </li>
             `;
-        catalog.insertAdjacentHTML('beforeEnd', card);
+        catalog.insertAdjacentHTML('afterbegin', card);
     });
 }
 
@@ -203,6 +203,7 @@ searchInput.addEventListener('input', event => {
             error.textContent = 'Ничего не найдено!';
         }
     } else {
+        error.textContent = '';
         renderCards();
     }
 
